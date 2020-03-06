@@ -1,5 +1,5 @@
-Safekeeper is a simple java program that does symmetric encryption of some user provided text with some
-user provided secret. 
+Safekeeper is a simple java command line tool that creates a native image (executable) using GraalVM. 
+The tool does AES symmetric encryption of some user provided text with some user provided secret. 
 
 Upon building it, a safekeeper binary is generated that can be run directly without the need for installing 
 the JVM on any machine. It uses GraalVM native image building capabilities to generate the binary
