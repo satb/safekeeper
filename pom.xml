@@ -29,8 +29,8 @@
                 <configuration>
                     <imageName>${project.name}</imageName>
                     <mainClass>${mainClass}</mainClass>
-                    <!--          <buildArgs>-J&#45;&#45;add-exports=java.base/jdk.internal.module=ALL-UNNAMED</buildArgs>-->
-                    <!--          <buildArgs>-H:+ReportUnsupportedElementsAtRuntime &#45;&#45;allow-incomplete-classpath</buildArgs>-->
+                    <buildArgs>--no-fallback</buildArgs>
+                    <buildArgs>--enable-all-security-services</buildArgs>
                 </configuration>
                 <executions>
                     <execution>
@@ -45,19 +45,6 @@
     </build>
 
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.1</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk16 -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk16</artifactId>
-            <version>1.46</version>
-        </dependency>
 
     </dependencies>
 

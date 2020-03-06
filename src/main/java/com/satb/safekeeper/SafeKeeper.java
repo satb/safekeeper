@@ -1,75 +1,48 @@
 package com.satb.safekeeper;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.Console;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Security;
+import java.security.*;
 import java.util.Arrays;
 import java.util.Base64;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class SafeKeeper {
 
-    private static SecretKeySpec secretKey;
-    private static byte[] key;
-    private static final String ALGO = "AES/CBC/PKCS7Padding";
+    private static final String ALGO = "AES/CBC/PKCS5PADDING";
 ;   private static final String ivStr = "0123456789abcdef";
-    private static void setKey(String myKey)
-    {
-        MessageDigest sha = null;
-        try {
-            key = myKey.getBytes(StandardCharsets.UTF_8);
-            sha = MessageDigest.getInstance("SHA-1");
-            key = sha.digest(key);
-            key = Arrays.copyOf(key, 16);
-            secretKey = new SecretKeySpec(key, "AES");
-        }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+
+    private static String encrypt(String value, String secret) throws UnsupportedEncodingException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException {
+        IvParameterSpec iv = new IvParameterSpec(ivStr.getBytes("UTF-8"));
+        SecretKeySpec skeySpec = new SecretKeySpec(secret.getBytes("UTF-8"), "AES");
+
+        Cipher cipher = Cipher.getInstance(ALGO);
+        cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+        byte[] encrypted = cipher.doFinal(value.getBytes());
+        return new String(Base64.getEncoder().encode(encrypted));
     }
 
-    private static String encrypt(String strToEncrypt, String secret)
-    {
-        try
-        {
-            setKey(secret);
-            Cipher cipher = Cipher.getInstance(ALGO);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(ivStr.getBytes(StandardCharsets.US_ASCII)));
-            return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.US_ASCII)));
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error while encrypting: " + e.toString());
-        }
-        return null;
+    private static String decrypt(String strToDecrypt, String secret) throws UnsupportedEncodingException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        IvParameterSpec iv = new IvParameterSpec(ivStr.getBytes("UTF-8"));
+        SecretKeySpec skeySpec = new SecretKeySpec(secret.getBytes("UTF-8"), "AES");
+
+        Cipher cipher = Cipher.getInstance(ALGO);
+        cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+        byte[] original = cipher.doFinal(Base64.getDecoder().decode(strToDecrypt));
+
+        return new String(original);
     }
 
-    private static String decrypt(String strToDecrypt, String secret)
-    {
-        try
-        {
-            setKey(secret);
-            Cipher cipher = Cipher.getInstance(ALGO);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(ivStr.getBytes(StandardCharsets.US_ASCII)));
-            return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
-        }
-        catch (Exception e)
-        {
-            System.out.println("Error while decrypting: " + e.toString());
-        }
-        return null;
-    }
-
-    public static void main(String[] args)
-    {
-        Security.addProvider(new BouncyCastleProvider());
+    public static void main(String[] args) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, UnsupportedEncodingException, BadPaddingException, IllegalBlockSizeException {
         Console console = System.console();
         System.out.print("Enter the secret key: ");
         char [] secret = console.readPassword();
